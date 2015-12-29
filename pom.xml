@@ -1,0 +1,385 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>cz.muni</groupId>
+    <artifactId>pdfJbIm</artifactId>
+    <packaging>jar</packaging>
+    <version>1.4-SNAPSHOT</version>
+    <name>pdfJbIm</name>
+    <description>
+        Tool used for (re)compression of PDF files using standard JBIG2
+
+        It is written in Java and uses library Apache PDFBox and IText for manipulation
+        with PDF documents and encoder jbig2enc for compression of extracted images.
+    </description>
+
+    <!-- details about the organization that 'owns' the project -->
+    <organization>
+        <name>Faculty of Informatics, Masaryk University, Brno</name>
+        <url>http://www.fi.muni.cz/</url>
+    </organization>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.findbugs-plugin>2.5.5</version.findbugs-plugin>
+        <version.codenarc-plugin>0.18-1</version.codenarc-plugin>
+        <version.source-plugin>2.3</version.source-plugin>
+        <version.javadoc-plugin>2.9.1</version.javadoc-plugin>
+        <version.release-plugin>2.5</version.release-plugin>
+
+        <version.pdfbox>1.6.0</version.pdfbox>
+        <version.bouncycastle>1.46</version.bouncycastle>
+        <version.icu>4.8.1</version.icu>
+        <version.itext>5.1.3</version.itext>
+        <version.commons-logging>1.1.1</version.commons-logging>
+        <version.logback>1.0.0</version.logback>
+        <version.slf4j>1.6.4</version.slf4j>
+        <version.junit>4.8.2</version.junit>
+
+        <version.com.google.code.cookcc>0.3.3</version.com.google.code.cookcc>
+        <version.com.google.guava.guava>18.0</version.com.google.guava.guava>
+        <version.com.puppycrawl.tools.checkstyle>6.1.1</version.com.puppycrawl.tools.checkstyle>
+        <version.junit.junit>4.12</version.junit.junit>
+        <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
+        <version.org.apache.maven.plugins.maven-checkstyle-plugin>2.15</version.org.apache.maven.plugins.maven-checkstyle-plugin>
+        <version.org.apache.maven.plugins.maven-clean-plugin>2.6.1</version.org.apache.maven.plugins.maven-clean-plugin>
+        <version.org.apache.maven.plugins.maven-compiler-plugin>3.3</version.org.apache.maven.plugins.maven-compiler-plugin>
+        <version.org.apache.maven.plugins.maven-dependency-plugin>2.10</version.org.apache.maven.plugins.maven-dependency-plugin>
+        <version.org.apache.maven.plugins.maven-deploy-plugin>2.8.2</version.org.apache.maven.plugins.maven-deploy-plugin>
+        <version.org.apache.maven.plugins.maven-jar-plugin>2.6</version.org.apache.maven.plugins.maven-jar-plugin>
+        <version.org.apache.maven.plugins.maven-javadoc-plugin>2.10.3</version.org.apache.maven.plugins.maven-javadoc-plugin>
+        <version.org.apache.maven.plugins.maven-release-plugin>2.5.2</version.org.apache.maven.plugins.maven-release-plugin>
+        <version.org.apache.maven.plugins.maven-resources-plugin>2.7</version.org.apache.maven.plugins.maven-resources-plugin>
+        <version.org.apache.maven.plugins.maven-shade-plugin>2.3</version.org.apache.maven.plugins.maven-shade-plugin>
+        <version.org.apache.maven.plugins.maven-source-plugin>2.4</version.org.apache.maven.plugins.maven-source-plugin>
+        <version.org.apache.maven.plugins.maven-surefire-plugin>2.18.1</version.org.apache.maven.plugins.maven-surefire-plugin>
+        <version.org.codehaus.groovy.groovy-everything>2.3.7</version.org.codehaus.groovy.groovy-everything>
+        <version.org.codehaus.mojo.codenarc-maven-plugin>0.22-1</version.org.codehaus.mojo.codenarc-maven-plugin>
+        <version.org.codehaus.mojo.findbugs-maven-plugin>2.5.5</version.org.codehaus.mojo.findbugs-maven-plugin>
+        <version.org.codehaus.mojo.findbugs-maven-plugin_java8>3.0.1</version.org.codehaus.mojo.findbugs-maven-plugin_java8>
+
+        <version.java>1.8</version.java>
+
+    </properties>
+
+    <developers>
+        <developer>
+            <id>nickradas</id>
+            <name>Radim Hatlapatka</name>
+            <email>hata.radim@gmail.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/rhatlapa/pdfjbim/issues</url>
+    </issueManagement>
+
+    <url>https://github.com/rhatlapa/pdfjbim</url>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <scm>
+        <connection>scm:git:git@github.com:rhatlapa/pdfjbim.git</connection>
+        <developerConnection>scm:svn:git@github.com:rhatlapa/pdfjbim.git</developerConnection>
+        <url>https://github.com/rhatlapa/pdfjbim</url>
+    </scm>
+
+
+    <dependencies>
+
+        <!-- dependencies for manipulation with PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${version.pdfbox}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15</artifactId>
+            <version>${version.bouncycastle}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk15</artifactId>
+            <version>${version.bouncycastle}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>${version.icu}</version>
+        </dependency>
+
+        <!-- iText -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>${version.itext}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- logging -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>${version.commons-logging}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${version.logback}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${version.logback}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
+        </dependency>
+
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+
+    <licenses>
+        <license>
+            <name>GNU Affero General Public License version 3</name>
+            <url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-antrun-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-clean-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-compiler-plugin}</version>
+                    <configuration>
+                        <source>${version.java}</source>
+                        <target>${version.java}</target>
+                        <testSource>${version.java}</testSource>
+                        <testTarget>${version.java}</testTarget>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-dependency-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-deploy-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-jar-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-javadoc-plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-resources-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-release-plugin}</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>v@{version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-shade-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-source-plugin}</version>
+                    <executions>
+                        <!--
+                          - This binds the "attach-sources" execution, which is defined by the "release-profile" profile
+                          - in the Super POM, to the "none" phase so that its "sources:jar" goal is not executed.
+                          - The "sources:jar" goal reruns the "generate-sources" phase, which wastes time and
+                          - has side effects (re-attaches the sources JAR again, which causes problems during release).
+                          -->
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>none</phase>
+                        </execution>
+                        <execution>
+                            <id>attach-sources-jar</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-surefire-plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit47</artifactId>
+                            <version>${version.org.apache.maven.plugins.maven-surefire-plugin}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>${version.org.codehaus.mojo.findbugs-maven-plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>find-bugs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>cz.muni.pdfjbim.Run</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/lib
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<artifactId>findbugs-maven-plugin</artifactId>-->
+            <!--</plugin>-->
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- support Java 8: use newer FindBugs plugin, switch off Javadoc's doclint -->
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <version.org.codehaus.mojo.findbugs-maven-plugin>
+                    ${version.org.codehaus.mojo.findbugs-maven-plugin_java8}
+                </version.org.codehaus.mojo.findbugs-maven-plugin>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+</project>
