@@ -228,7 +228,7 @@ public class Run {
         }
 
         // originalPdf is an input PDF which shall be recompressed
-        File originalPdf = new File(pdfFile);
+//        File originalPdf = new File(pdfFile);
 
         // initialization for counting time of recompression
         long sizeOfInputPdf = new File(pdfFile).length();
@@ -271,8 +271,9 @@ public class Run {
             Map<String, List<PdfImageInformation>> pdfImagesInfoSplittedToList = Utils.
                     splitListOfPdfImageInfo(pdfImagesInfo, limit, basename);
 
-            for (String basenameAsKey : jbig2encInputImagesSplittedToList.keySet()) {
-                jbig2.run(jbig2encInputImagesSplittedToList.get(basenameAsKey), basenameAsKey);
+            for (Map.Entry<String, List<String> > entry : jbig2encInputImagesSplittedToList.entrySet()) {
+                String basenameAsKey = entry.getKey();
+                jbig2.run(entry.getValue(), basenameAsKey);
 
                 // reading output of encoder and associating with informations about them
                 int lastPathSeparator = basenameAsKey.lastIndexOf(File.separator);

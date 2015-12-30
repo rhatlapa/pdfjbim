@@ -60,11 +60,12 @@ public class PdfImageReplacer {
     public void replaceImageUsingIText(String pdfName, OutputStream os, List<Jbig2ForPdf> imagesData)
             throws PdfRecompressionException {
 
-        try {
-            replaceImageUsingIText(new FileInputStream(pdfName), os, imagesData);
+        try (FileInputStream pdfInputStream = new FileInputStream(pdfName)) {
+            replaceImageUsingIText(pdfInputStream, os, imagesData);
         } catch (FileNotFoundException ex) {
-            log.error("Original PDF not found", ex);
-            throw new PdfRecompressionException(ex);
+            throw new PdfRecompressionException("File " + pdfName + " doesn't exist", ex);
+        } catch (IOException ex) {
+            throw new PdfRecompressionException("Unable to read file " + pdfName, ex);
         }
     }
 

@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -184,12 +185,13 @@ public class Jbig2enc {
 
         Runtime runtime = Runtime.getRuntime();
         Process pr1;
+        BufferedReader reader = null;
         try {
             log.debug("Executing {}", toRun);
             pr1 = runtime.exec(run);
             InputStream erStream = pr1.getErrorStream();
             int exitValue = pr1.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(erStream));
+            reader = new BufferedReader(new InputStreamReader(erStream, StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
 //                writes only a number of symbols recognised by encoder and number of pages
@@ -222,6 +224,13 @@ public class Jbig2enc {
         } catch (InterruptedException ex2) {
             log.warn("running jbig2enc was interupted", ex2);
         } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.warn("Failed to close the reader", e);
+                }
+            }
             Tools.deleteFilesFromList(imageList);
         }
     }

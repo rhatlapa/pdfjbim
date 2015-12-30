@@ -68,15 +68,15 @@ public class PdfImage {
     public byte[] getImageData() throws PdfRecompressionException {
         Long sizeOfFile = imageDataFile.length();
         int imageSize = 0;
-        FileInputStream jbImageInput = null;
+
+        DataInputStream inputData = null;
         log.debug("Getting image data from {}", imageDataFile);
-        try {
-            jbImageInput = new FileInputStream(imageDataFile);
+        try (FileInputStream jbImageInput = new FileInputStream(imageDataFile)) {
             if (sizeOfFile > Integer.MAX_VALUE) {
                 throw new PdfRecompressionException("cannot process image greater than " + Integer.MAX_VALUE);
             }
             
-            DataInput inputData = new DataInputStream(jbImageInput);
+            inputData = new DataInputStream(jbImageInput);
             imageSize = sizeOfFile.intValue();
             byte[] imageBytes = new byte[imageSize];
             inputData.readFully(imageBytes);
@@ -85,6 +85,14 @@ public class PdfImage {
             throw new PdfRecompressionException(ex);
         } catch (IOException ioEx) {
             throw new PdfRecompressionException("io error", ioEx);
+        } finally {
+            try {
+                if (inputData != null) {
+                    inputData.close();
+                }
+            } catch (IOException e) {
+                throw new PdfRecompressionException("Failed to close the input stream", e);
+            }
         }
     }
 

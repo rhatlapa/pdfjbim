@@ -164,6 +164,9 @@ public class Tools {
         }
 
         File[] sourceFiles = sourceDir.listFiles();
+        if (sourceFiles == null) {
+            throw new IOException("Unable to read files from " + sourceDir);
+        }
         for (int i = 0; i < sourceFiles.length; i++) {
             if (!sourceFiles[i].isDirectory()) {
                 copy(sourceFiles[i], destinationDir);

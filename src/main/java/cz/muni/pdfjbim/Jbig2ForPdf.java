@@ -24,12 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +42,13 @@ public class Jbig2ForPdf {
     private SortedMap<Integer, PdfImage> jbig2Images;
     private List<File> jbFileNames = new ArrayList<File>();
     private static final Logger log = LoggerFactory.getLogger(Jbig2ForPdf.class);
-    
+
     /**
      * constructor that reads jbig2 images and global data and saves them in array of bytes
+     *
      * @param pathToDir represents path to directory containing images data and global data
-     * @param basename 
-     * @throws PdfRecompressionException 
+     * @param basename
+     * @throws PdfRecompressionException
      */
     public Jbig2ForPdf(String pathToDir, String basename) throws PdfRecompressionException {
         jbig2Images = new TreeMap<Integer, PdfImage>();
@@ -59,15 +56,18 @@ public class Jbig2ForPdf {
         if (!directory.isDirectory()) {
             throw new PdfRecompressionException("argument pathToDir doesn`t contain path to directory");
         }
-        
+
         FilenameFilter jbig2fileNameFilter = new Jbig2FilenameFilter(basename);
 
         File[] fileNames = directory.listFiles(jbig2fileNameFilter);
+        if (fileNames == null) {
+            throw new PdfRecompressionException("Unable to read files in " + directory);
+        }
         for (int i = 0; i < fileNames.length; i++) {
             File checkFile = fileNames[i];
             String fileName = checkFile.getName();
             log.trace("Checking file {} if it is an adequate JBIG2 file", checkFile.getPath());
-            
+
             if (checkFile.isDirectory()) {
                 log.trace("{} is a dictionary, continuing with next file");
                 continue;
@@ -80,8 +80,8 @@ public class Jbig2ForPdf {
                     try {
                         int suffixInt = Integer.parseInt(suffix);
                         log.debug("Recognized jbig2 image file: {}", checkFile);
-                        jbFileNames.add(checkFile);                        
-                        jbig2Images.put(suffixInt, new PdfImage(checkFile));                        
+                        jbFileNames.add(checkFile);
+                        jbig2Images.put(suffixInt, new PdfImage(checkFile));
                     } catch (NumberFormatException ex) {
                         log.warn("NumberFormatException encountered while checking suffix", ex);
                         continue;
@@ -92,16 +92,15 @@ public class Jbig2ForPdf {
                 Long sizeOfFile = checkFile.length();
                 log.debug("Recognized global dictionary: {}", checkFile);
                 int imageSize = 0;
-                FileInputStream jbImageInput = null;
 
-                try {
-                    jbImageInput = new FileInputStream(checkFile);                    
+                DataInputStream inputData = null;
+                try (FileInputStream jbImageInput = new FileInputStream(checkFile)) {
                     jbFileNames.add(checkFile);
                     if (sizeOfFile > Integer.MAX_VALUE) {
                         throw new PdfRecompressionException("Cannot process image greater than " + Integer.MAX_VALUE);
                     }
 
-                    DataInput inputData = new DataInputStream(jbImageInput);
+                    inputData = new DataInputStream(jbImageInput);
                     imageSize = sizeOfFile.intValue();
                     byte[] imageBytes = new byte[imageSize];
                     inputData.readFully(imageBytes);
@@ -110,6 +109,14 @@ public class Jbig2ForPdf {
                     throw new PdfRecompressionException(ex);
                 } catch (IOException ioEx) {
                     throw new PdfRecompressionException("io error", ioEx);
+                } finally {
+                    if (inputData != null) {
+                        try {
+                            inputData.close();
+                        } catch (IOException e) {
+                            log.error("IOException occurred when closing inputData stream", e);
+                        }
+                    }
                 }
             }
         }
@@ -117,7 +124,8 @@ public class Jbig2ForPdf {
 
     /**
      * add pdf image
-     * @param key 
+     *
+     * @param key
      * @param jbImage represents image encoding according to JBIG2 standard
      */
     public void addJbig2Image(int key, PdfImage jbImage) {
@@ -126,7 +134,8 @@ public class Jbig2ForPdf {
 
     /**
      * sets information to concrete image in the list
-     * @param i represents position of the image in the list
+     *
+     * @param i                   represents position of the image in the list
      * @param pdfImageInformation represents information about that image
      */
     public void setJbig2ImageInfo(int i, PdfImageInformation pdfImageInformation) {
@@ -136,8 +145,9 @@ public class Jbig2ForPdf {
     /**
      * Sets informations about pdf image given in List.
      * This list of information has to have the same order as images in the list of pdf images and the same count
+     *
      * @param pdfImageInformations represents list of informations about pdf images
-     * @throws PdfRecompressionException  
+     * @throws PdfRecompressionException
      */
     public void setJbig2ImagesInfo(List<PdfImageInformation> pdfImageInformations) throws PdfRecompressionException {
         if (pdfImageInformations == null) {
@@ -155,15 +165,8 @@ public class Jbig2ForPdf {
     }
 
     /**
-     * sets global data of image
-     * @param globalData represents global data
-     */
-    public void setGlobalData(byte[] globalData) {
-        this.globalData = globalData;
-    }
-
-    /**
      * sets atribut jbig2Images
+     *
      * @param jbig2Images represents list of pdf images
      */
     public void setJbig2Images(SortedMap<Integer, PdfImage> jbig2Images) {
@@ -174,7 +177,7 @@ public class Jbig2ForPdf {
      * @return return global data
      */
     public byte[] getGlobalData() {
-        return globalData;
+        return globalData.clone();
     }
 
     /**
@@ -193,7 +196,6 @@ public class Jbig2ForPdf {
     }
 
     /**
-     *
      * @return map of images identified by PDF object ID
      */
     public Map<PdfObjId, PdfImage> getMapOfJbig2Images() {
@@ -211,9 +213,8 @@ public class Jbig2ForPdf {
     }
 
     /**
-     *
      * @return files that contains data of images and global data
-     *         (output of jbig2enc with parameters -s and -p)
+     * (output of jbig2enc with parameters -s and -p)
      */
     public List<File> getJbFiles() {
         return jbFileNames;

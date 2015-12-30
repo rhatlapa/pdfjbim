@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -67,8 +68,8 @@ import org.slf4j.LoggerFactory;
 public class PdfImageExtractor {
 
     private int imageCounter = 1;
-    private List<String> namesOfImages = new ArrayList<String>();
-    private List<PdfImageInformation> originalImageInformations = new ArrayList<PdfImageInformation>();
+    private List<String> namesOfImages = new ArrayList<>();
+    private List<PdfImageInformation> originalImageInformations = new ArrayList<>();
     private static final Logger log = LoggerFactory.getLogger(PdfImageExtractor.class);
     private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 
@@ -115,11 +116,12 @@ public class PdfImageExtractor {
             String fileName = pdfFile.getName();
             prefix = fileName.substring(0, fileName.length() - 4);
         }
-        try {
-            InputStream is = new FileInputStream(pdfFile);
+        try (InputStream is = new FileInputStream(pdfFile)) {
             extractImagesUsingPdfParser(is, prefix, password, pagesToProcess, binarize);
         } catch (FileNotFoundException ex) {
-            throw new PdfRecompressionException("File doesn't exist", ex);
+            throw new PdfRecompressionException("File " + pdfFile + " doesn't exist", ex);
+        } catch (IOException ex) {
+            throw new PdfRecompressionException("Unable to read file " + pdfFile, ex);
         }
     }
 
@@ -139,7 +141,7 @@ public class PdfImageExtractor {
         }
         // checking arguments and setting appropriate variables
         if (pdfFile == null) {
-            throw new IllegalArgumentException(pdfFile);
+            throw new IllegalArgumentException("pdfFile must be defined");
         }
 
         String prefix = null;
@@ -151,11 +153,12 @@ public class PdfImageExtractor {
             prefix = pdfFile.substring(0, pdfFile.length() - 4);
         }
 
-        try {
-            InputStream is = new FileInputStream(pdfFile);
+        try (InputStream is = new FileInputStream(pdfFile)) {
             extractImagesUsingPdfParser(is, prefix, password, pagesToProcess, binarize);
         } catch (FileNotFoundException ex) {
-            throw new PdfRecompressionException("File doesn't exist", ex);
+            throw new PdfRecompressionException("File " + pdfFile + " doesn't exist", ex);
+        } catch (IOException ex) {
+            throw new PdfRecompressionException("File " + pdfFile + " can't be read", ex);
         }
     }
 
@@ -299,11 +302,12 @@ public class PdfImageExtractor {
 
         InputStream inputStream = null;
         if (password != null) {
-            try {
-                ByteArrayOutputStream decryptedOutputStream = null;
-                PdfReader reader = new PdfReader(is, password.getBytes());
+            try (ByteArrayOutputStream decryptedOutputStream = new ByteArrayOutputStream()) {
+                PdfReader reader = new PdfReader(is, password.getBytes(StandardCharsets.UTF_8));
                 PdfStamper stamper = new PdfStamper(reader, decryptedOutputStream);
-                stamper.close();
+                if (stamper != null) {
+                    stamper.close();
+                }
                 inputStream = new ByteArrayInputStream(decryptedOutputStream.toByteArray());
             } catch (DocumentException ex) {
                 throw new PdfRecompressionException(ex);
@@ -431,7 +435,7 @@ public class PdfImageExtractor {
         }
         // checking arguments and setting appropriate variables
         if (pdfFile == null) {
-            throw new IllegalArgumentException(pdfFile);
+            throw new IllegalArgumentException("pdfFile must be defined");
         }
 
 
@@ -439,8 +443,8 @@ public class PdfImageExtractor {
         if (password != null) {
             try {
                 log.debug("PDF probably encrypted, trying to decrypt using given password {}", password);
-                ByteArrayOutputStream decryptedOutputStream = null;
-                PdfReader reader = new PdfReader(pdfFile, password.getBytes());
+                ByteArrayOutputStream decryptedOutputStream = new ByteArrayOutputStream();
+                PdfReader reader = new PdfReader(pdfFile, password.getBytes(StandardCharsets.UTF_8));
                 PdfStamper stamper = new PdfStamper(reader, decryptedOutputStream);
                 stamper.close();
                 inputStream = new ByteArrayInputStream(decryptedOutputStream.toByteArray());
@@ -491,10 +495,11 @@ public class PdfImageExtractor {
                 Map xobjs = resources.getXObjects();
 
                 if (xobjs != null) {
-                    Iterator xobjIter = xobjs.keySet().iterator();
+                    Iterator xobjIter = xobjs.entrySet().iterator();
                     while (xobjIter.hasNext()) {
-                        String key = (String) xobjIter.next();
-                        PDXObject xobj = (PDXObject) xobjs.get(key);
+                        Map.Entry entry = (Map.Entry) xobjIter.next();
+                        String key = (String)entry.getKey();
+                        PDXObject xobj = (PDXObject) entry.getValue();
                         Map images;
                         if (xobj instanceof PDXObjectForm) {
                             PDXObjectForm xform = (PDXObjectForm) xobj;
@@ -505,10 +510,11 @@ public class PdfImageExtractor {
 
                         // reading images from each page and saving them to file
                         if (images != null) {
-                            Iterator imageIter = images.keySet().iterator();
+                            Iterator imageIter = images.entrySet().iterator();
                             while (imageIter.hasNext()) {
-                                String imKey = (String) imageIter.next();
-                                PDXObjectImage image = (PDXObjectImage) images.get(imKey);
+                                Map.Entry imEntry = (Map.Entry) imageIter.next();
+                                String imKey = (String) imEntry.getKey();
+                                PDXObjectImage image = (PDXObjectImage) imEntry.getValue();
 
                                 PDStream pdStr = new PDStream(image.getCOSStream());
                                 List filters = pdStr.getFilters();
@@ -561,7 +567,7 @@ public class PdfImageExtractor {
         } catch (IOException ex) {
             Tools.deleteFilesFromList(namesOfImages);
             throw new PdfRecompressionException("Unable to parse PDF document", ex);
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             Tools.deleteFilesFromList(namesOfImages);
         } finally {
             if (doc != null) {
