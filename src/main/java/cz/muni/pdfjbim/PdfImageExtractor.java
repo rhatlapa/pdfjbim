@@ -364,9 +364,7 @@ public class PdfImageExtractor {
                         // at this moment for preventing bad output (bad coloring) from LZWDecode filter
                         if (filters.contains(COSName.LZW_DECODE.getName())) {
                             log.info("This is LZWDecoded => skipping");
-
                             continue;
-
                         }
 
                         if (filters.contains(COSName.FLATE_DECODE.getName())) {
@@ -396,7 +394,6 @@ public class PdfImageExtractor {
                         namesOfImages.add(name + "." + image.getSuffix());
 
                     }
-//                    }
                 }
             }
         } catch (IOException ex) {
@@ -437,7 +434,6 @@ public class PdfImageExtractor {
         if (pdfFile == null) {
             throw new IllegalArgumentException("pdfFile must be defined");
         }
-
 
         InputStream inputStream = null;
         if (password != null) {
@@ -559,10 +555,8 @@ public class PdfImageExtractor {
                                 namesOfImages.add(name + "." + image.getSuffix());
                             }
                         }
-
                     }
                 }
-
             }
         } catch (IOException ex) {
             Tools.deleteFilesFromList(namesOfImages);

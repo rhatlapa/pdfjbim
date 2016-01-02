@@ -36,9 +36,8 @@
         <version.slf4j>1.6.4</version.slf4j>
         <version.junit>4.8.2</version.junit>
 
-        <version.com.google.code.cookcc>0.3.3</version.com.google.code.cookcc>
-        <version.com.google.guava.guava>18.0</version.com.google.guava.guava>
-        <version.com.puppycrawl.tools.checkstyle>6.1.1</version.com.puppycrawl.tools.checkstyle>
+        <version.commons-io>2.4</version.commons-io>
+
         <version.junit.junit>4.12</version.junit.junit>
         <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
         <version.org.apache.maven.plugins.maven-checkstyle-plugin>2.15</version.org.apache.maven.plugins.maven-checkstyle-plugin>
@@ -95,6 +94,12 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${version.commons-io}</version>
+        </dependency>
 
         <!-- dependencies for manipulation with PDF -->
         <dependency>

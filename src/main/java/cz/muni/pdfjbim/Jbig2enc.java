@@ -23,6 +23,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
+
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,31 +192,13 @@ public class Jbig2enc {
         try {
             log.debug("Executing {}", toRun);
             pr1 = runtime.exec(run);
-            InputStream erStream = pr1.getErrorStream();
+            OutputRedirector errRedirectThread = new OutputRedirector(pr1.getErrorStream());
+            OutputRedirector outRedirectThread = new OutputRedirector(pr1.getInputStream());
+            errRedirectThread.start();
+            outRedirectThread.start();
+
             int exitValue = pr1.waitFor();
-            reader = new BufferedReader(new InputStreamReader(erStream, StandardCharsets.UTF_8));
-            String line;
-            while ((line = reader.readLine()) != null) {
-//                writes only a number of symbols recognised by encoder and number of pages
-//                if (line.contains("JBIG2 compression complete")) {
-//                    String[] word = line.split(" ");
-//                    for (int i = 0; i < word.length; i++) {
-//                        if (word[i].contains("symbols:")) {
-//                            int differenciator = word[i].indexOf(":");
-//                            String symNum = word[i].substring(differenciator + 1);
-//                            System.err.print(";" + symNum);
-//                        }
-//                        if (word[i].contains("pages:")) {
-//                            int differenciator = word[i].indexOf(":");
-//                            String pageNum = word[i].substring(differenciator + 1);
-//                            System.err.print(";" + pageNum);
-//                        }
-//                    }
-//                }
 
-
-                log.debug(line);
-            }
             if (exitValue != 0) {
                 log.warn("jbig2enc ended with error " + exitValue);
                 Tools.deleteFilesFromList(imageList);
@@ -224,13 +209,7 @@ public class Jbig2enc {
         } catch (InterruptedException ex2) {
             log.warn("running jbig2enc was interupted", ex2);
         } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.warn("Failed to close the reader", e);
-                }
-            }
+            IOUtils.closeQuietly(reader);
             Tools.deleteFilesFromList(imageList);
         }
     }
