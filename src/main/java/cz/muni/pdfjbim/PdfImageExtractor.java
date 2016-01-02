@@ -347,7 +347,7 @@ public class PdfImageExtractor {
                         PDXObjectImage image = (PDXObjectImage) PDXObjectImage.createXObject(imageObj);
 
                         PDStream pdStr = new PDStream(image.getCOSStream());
-                        List filters = pdStr.getFilters();
+                        List<COSName> filters = pdStr.getFilters();
 
                         log.debug("Detected image with color depth: {} bits", image.getBitsPerComponent());
                         if (filters == null) {
@@ -362,22 +362,22 @@ public class PdfImageExtractor {
                         }
 
                         // at this moment for preventing bad output (bad coloring) from LZWDecode filter
-                        if (filters.contains(COSName.LZW_DECODE.getName())) {
+                        if (filters.contains(COSName.LZW_DECODE)) {
                             log.info("This is LZWDecoded => skipping");
                             continue;
                         }
 
-                        if (filters.contains(COSName.FLATE_DECODE.getName())) {
+                        if (filters.contains(COSName.FLATE_DECODE)) {
                             log.debug("FlateDecoded image detected");
                         }
 
                         // detection of unsupported filters by pdfBox library
-                        if (filters.contains("JBIG2Decode")) {
+                        if (filters.contains(COSName.JBIG2_DECODE)) {
                             log.warn("Allready compressed according to JBIG2 standard => skipping");
                             continue;
                         }
 
-                        if (filters.contains("JPXDecode")) {
+                        if (filters.contains(COSName.JPX_DECODE)) {
                             log.warn("Unsupported filter JPXDecode => skipping");
                             continue;
                         }
@@ -513,7 +513,7 @@ public class PdfImageExtractor {
                                 PDXObjectImage image = (PDXObjectImage) imEntry.getValue();
 
                                 PDStream pdStr = new PDStream(image.getCOSStream());
-                                List filters = pdStr.getFilters();
+                                List<COSName> filters = pdStr.getFilters();
 
                                 if (image.getBitsPerComponent() > 1 && !binarize) {
                                     log.info("It is not a bitonal image => skipping");
@@ -521,18 +521,18 @@ public class PdfImageExtractor {
                                 }
 
                                 // at this moment for preventing bad output (bad coloring) from LZWDecode filter
-                                if (filters.contains(COSName.LZW_DECODE.getName())) {
+                                if (filters.contains(COSName.LZW_DECODE)) {
                                     log.info("This is LZWDecoded => skipping");
                                     continue;
 
                                 }
 
                                 // detection of unsupported filters by pdfBox library
-                                if (filters.contains("JBIG2Decode")) {
+                                if (filters.contains(COSName.JBIG2_DECODE)) {
                                     log.info("Allready compressed according to JBIG2 standard => skipping");
                                     continue;
                                 }
-                                if (filters.contains("JPXDecode")) {
+                                if (filters.contains(COSName.JPX_DECODE)) {
                                     log.info("Unsupported filter JPXDecode => skipping");
                                     continue;
                                 }
