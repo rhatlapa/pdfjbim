@@ -234,7 +234,7 @@ public class Run {
         long sizeOfInputPdf = new File(pdfFile).length();
         double startTime = System.currentTimeMillis();
 
-        // PdfImageProcessor handles extraction of pdf and putting recompressed images
+        // PdfImageExtractor handles extraction of pdf and putting recompressed images
         PdfImageExtractor imageExtractor = new PdfImageExtractor();
 
         // image extraction
