@@ -37,6 +37,7 @@
         <version.junit>4.8.2</version.junit>
 
         <version.commons-io>2.4</version.commons-io>
+        <version.levigo-jbig2-imageio>1.6.5</version.levigo-jbig2-imageio>
 
         <version.junit.junit>4.12</version.junit.junit>
         <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
@@ -94,6 +95,11 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>com.levigo.jbig2</groupId>
+            <artifactId>levigo-jbig2-imageio</artifactId>
+            <version>${version.levigo-jbig2-imageio}</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>

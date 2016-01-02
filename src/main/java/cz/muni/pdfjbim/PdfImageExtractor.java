@@ -73,6 +73,11 @@ public class PdfImageExtractor {
     private static final Logger log = LoggerFactory.getLogger(PdfImageExtractor.class);
     private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 
+    private boolean skipJBig2Images = true;
+    // TODO: add suitable handling of recompressing JBIG2 images,
+    // TODO: currently the global dictionary is not properly replaced in PdfImageReplacer resulting in creating second one
+    // TODO: => the resulting PDF size is increased instead of being decreesed => for now setting default as tru => skipping such images
+
     /**
      * @return names of images in a list
      */
@@ -241,7 +246,7 @@ public class PdfImageExtractor {
 
     }
 
-    private List<Image> GetImagesFromPdfDict(PdfDictionary dict, PdfReader doc) throws IOException {
+    private List<Image> getImagesFromPdfDict(PdfDictionary dict, PdfReader doc) throws IOException {
         List<Image> images = new ArrayList<Image>();
         PdfDictionary res = (PdfDictionary) (PdfReader.getPdfObject(dict.get(PdfName.RESOURCES)));
         PdfDictionary xobj = (PdfDictionary) (PdfReader.getPdfObject(res.get(PdfName.XOBJECT)));
@@ -271,7 +276,7 @@ public class PdfImageExtractor {
                                 log.warn("problem to process FlatDecoded Image", ex);
                             }
                         } else if (PdfName.FORM.equals(subtype) || PdfName.GROUP.equals(subtype)) {
-                            images.addAll(GetImagesFromPdfDict(tg, doc));
+                            images.addAll(getImagesFromPdfDict(tg, doc));
                         }
                     }
                 }
@@ -371,12 +376,16 @@ public class PdfImageExtractor {
                             log.debug("FlateDecoded image detected");
                         }
 
-                        // detection of unsupported filters by pdfBox library
                         if (filters.contains(COSName.JBIG2_DECODE)) {
-                            log.warn("Allready compressed according to JBIG2 standard => skipping");
-                            continue;
+                            if (skipJBig2Images) {
+                                log.warn("Allready compressed according to JBIG2 standard => skipping");
+                                continue;
+                            } else {
+                                log.debug("JBIG2 image detected");
+                            }
                         }
 
+                        // detection of unsupported filters by pdfBox library
                         if (filters.contains(COSName.JPX_DECODE)) {
                             log.warn("Unsupported filter JPXDecode => skipping");
                             continue;
@@ -515,6 +524,7 @@ public class PdfImageExtractor {
                                 PDStream pdStr = new PDStream(image.getCOSStream());
                                 List<COSName> filters = pdStr.getFilters();
 
+
                                 if (image.getBitsPerComponent() > 1 && !binarize) {
                                     log.info("It is not a bitonal image => skipping");
                                     continue;
@@ -527,11 +537,16 @@ public class PdfImageExtractor {
 
                                 }
 
-                                // detection of unsupported filters by pdfBox library
                                 if (filters.contains(COSName.JBIG2_DECODE)) {
-                                    log.info("Allready compressed according to JBIG2 standard => skipping");
-                                    continue;
+                                    if (skipJBig2Images) {
+                                        log.warn("Allready compressed according to JBIG2 standard => skipping");
+                                        continue;
+                                    } else {
+                                        log.debug("JBIG2 image detected");
+                                    }
                                 }
+
+                                // detection of unsupported filters by pdfBox library
                                 if (filters.contains(COSName.JPX_DECODE)) {
                                     log.info("Unsupported filter JPXDecode => skipping");
                                     continue;
